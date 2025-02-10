@@ -23,3 +23,5 @@
 ----------------
 ## How does it like
 ![app_screenshot](tutorials/app_screenshot.png)
+
+More details can be found in tutorials folder.
