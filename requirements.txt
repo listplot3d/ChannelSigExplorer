@@ -1,0 +1,8 @@
+torch
+pyside6
+pyqtgraph
+pywavelets
+pathlib
+mne-lsl
+pyedflib
+pyserial

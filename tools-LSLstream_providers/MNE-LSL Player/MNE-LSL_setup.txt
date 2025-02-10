@@ -1,0 +1,5 @@
+
+1.install mne-lsl player (https://mne.tools/mne-lsl/stable/index.html)
+2.execute following command in current folder, will create a LSL stream replaying the data file.
+  mne-lsl player "sample_data_SC4001E0-PSG.edf"
+

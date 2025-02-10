@@ -1,0 +1,2 @@
+Currently, the model is generated using [EmbedSleepNet](https://github.com/supermina999/EmbedSleepNet)
+with 50 epochs of training. It is intended for demo purposes to represent the process of real-time sleep staging.

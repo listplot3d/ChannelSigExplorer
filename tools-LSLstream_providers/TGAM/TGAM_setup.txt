@@ -1,0 +1,5 @@
+1. connect dongle on PC
+2. confirm COM port via OS->Setting->Device Manager
+3. confirm COM port in NeuroSkyTGAM-LSL-Bridge.py: __main__ is same as above
+4. run following command in current folder will start forwarding TGAM data to LSL Stream:
+  python NeuroSkyTGAM-LSL-Bridge.py

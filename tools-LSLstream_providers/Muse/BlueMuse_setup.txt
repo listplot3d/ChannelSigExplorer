@@ -1,0 +1,10 @@
+How to Use BlueMuse
+1.Download BlueMuse(https://github.com/kowalej/BlueMuse/releases)
+2.Install BlueMuse (tested on Win11):
+    2.1 Go to Windows Settings -> System -> Developer Options -> Enable Developer Mode.
+    2.2 Locate the InstallBlueMuse.ps1 script, right-click, and run it with PowerShell.
+        2.2.1 Normally, you just need to click "Yes" throughout the process to complete the installation. If any issues occur, follow the steps below and then return to step 2.2:
+        2.2.2 Double-click BlueMuse_xxx_x64.cer, select "Current User" -> "Place all certificates in the following store" -> Click "Browse" -> Choose "Trusted Root Certification Authorities" -> Click "Next" throughout the process.
+        2.2.3 Open PowerShell as an administrator and execute the command: "Set-ExecutionPolicy RemoteSigned".
+3.Run from the command line:
+    start bluemuse:
