@@ -9,7 +9,7 @@
 ## How to Run
 #### 1. Hardware requirement
   * this software is tested based on PC with metrics: 2.60Ghz CPU + 8G Memory + Win11 (no graphic card)
-  * 2.0Ghz CPU + 4G Memory + Any OS should be able to run demonstrated functions in this software, but if you write own advanced indicators, or connect to new device, then it may change hardware requirements.
+  * if with less hardware resource, e.g.2.0Ghz CPU + 4G Memory + Any OS, it should also be alright to run indicators in tutorial. But if you write own advanced indicators, or connect to new device, then it may change hardware requirements.
 
 #### 2.Setup Environment
     conda create -n py12_env python=3.12
