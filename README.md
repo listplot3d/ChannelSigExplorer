@@ -1,10 +1,18 @@
-## User Scenarios for this software can be：
+## How does it look like?
+![app_screenshot](introduction/app_screenshot.png)
 
-* Real-time data analysis/visualization tool for BioSignal channel. In another word, real-time visualization tool for LSL Stream's single channel
+-------------------
+## User scenarios for this software could be：
+* **Real-time** data analysis/visualization tool for BioSignal channel. In another word, **real-time** visualization tool for LSL Stream's single channel
 * Gallary framework for BioSig indicators
 * Connectivity examples for EEG headbands
 * EEG headband quality evaluation tool
-* End-to-End example for BioSig/EEG applications
+* An End-to-End example for BioSig/EEG applications
+
+And it was originally composed to fit the place below:
+
+![app_positioning](introduction/app_positioning.png)
+
 ---------------
 ## How to Run
 #### 1. Hardware requirement
@@ -21,7 +29,5 @@
     python main_window.py
    
 ----------------
-## How does it like
-![app_screenshot](tutorials/app_screenshot.png)
 
-More details can be found in tutorials folder.
+More details could be found in [introduction](introduction) folder.
