@@ -33,4 +33,4 @@ And it was originally composed to fit the place below:
 More details could be found in [introduction](introduction) folder.
 
 ----------------
-Moreover, currently this is my hobby project to explore brainwave in order to improve personal practice in meditation. If you have found any interesting way to use this software, posting it by opening "issues" here would be very helpful to others! Cheers!
+Moreover, currently this is my hobby project to explore brainwave in order to improve personal practice in meditation. If you have found any interesting way to use this software, posting it by opening "issues" here would be very valuable! Cheers!
