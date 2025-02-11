@@ -3,7 +3,7 @@
 
 -------------------
 ## User scenarios for this software could be：
-* **Real-time** data analysis/visualization tool for BioSignal channel. In another word, **real-time** visualization tool for LSL Stream's single channel
+* **Real-time** data analysis/visualization tool for BioSignal channel. In another word, **real-time** visualization tool for [MNE-LSL](https://mne.tools/mne-lsl/stable/index.html) Stream's single channel
 * Gallary framework for BioSig indicators
 * Connectivity examples for EEG headbands
 * EEG headband quality evaluation tool
