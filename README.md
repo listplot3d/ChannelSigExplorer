@@ -3,7 +3,7 @@
 
 -------------------
 ## User scenarios for this software could be：
-* **Real-time** data analysis/visualization tool for BioSignal channel. In another word, **real-time** visualization tool for LSL Stream's single channel
+* **Real-time** data analysis/visualization tool for BioSignal channel. In another word, **real-time** visualization tool for [MNE-LSL](https://mne.tools/mne-lsl/stable/index.html) Stream's single channel
 * Gallary framework for BioSig indicators
 * Connectivity examples for EEG headbands
 * EEG headband quality evaluation tool
@@ -31,3 +31,6 @@ And it was originally composed to fit the place below:
 ----------------
 
 More details could be found in [introduction](introduction) folder.
+
+----------------
+Moreover, currently this is my hobby project to explore brainwave in order to improve personal practice in meditation. If you have found any interesting way to use or improve this software, posting it by opening "issues" here would be very valuable! Cheers!
