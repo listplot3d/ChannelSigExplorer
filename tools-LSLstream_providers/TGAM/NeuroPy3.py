@@ -30,6 +30,7 @@
 # 2024.12.13 pulled from https://github.com/lihas/NeuroPy, by Shawn Li
 # 2024.12.23 modified so be able to run with Win11+Python3.12, by Shawn Li
 # 2025.02.06 modifed little-endian issue for bands according to NeuroSky Doc
+# 2025.03.04 added __rawVoltage
 
 import serial
 import time
@@ -58,6 +59,7 @@ class NeuroPy3(object):
     __attention=0
     __meditation=0
     __rawValue=0
+    __rawVoltage=0
     __delta=0
     __theta=0
     __lowAlpha=0
@@ -168,6 +170,8 @@ class NeuroPy3(object):
                             self.rawValue = val0 * 256 + int(payload[i], 16)
                             if self.rawValue >= 32768:
                                 self.rawValue = self.rawValue - 65536
+
+                            self.rawVoltage = self.rawValue * (1.8 / 4096) / 2000
                             # print(self.rawValue)
 
                         elif (code == '83'):  # ASIC_EEG_POWER
@@ -248,6 +252,19 @@ class NeuroPy3(object):
         # if callback has been set, execute the function
         if "rawValue" in self.callBacksDictionary:
             self.callBacksDictionary["rawValue"](self.__rawValue)
+
+    # rawVoltage
+    @property
+    def rawVoltage(self):
+        "Get value for rawVoltage"
+        return self.__rawVoltage
+
+    @rawVoltage.setter
+    def rawVoltage(self, value):
+        self.__rawVoltage = value
+        # if callback has been set, execute the function
+        if "rawVoltage" in self.callBacksDictionary:
+            self.callBacksDictionary["rawVoltage"](self.__rawVoltage)
 
     # delta
     @property

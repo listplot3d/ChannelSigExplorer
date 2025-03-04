@@ -13,7 +13,7 @@ def start_LSL_StreamOutLet():
     global sOutlet
     # 创建LSL流输出端点
     sInfo = StreamInfo(name='TGAM EEG Stream', stype="EEG", n_channels=1,
-                       sfreq=512, dtype='int16', source_id="TGAM-LSL-Bridge")
+                       sfreq=256, dtype='float32', source_id="TGAM-LSL-Bridge")
     sInfo.set_channel_names(["Fp1"])
     sInfo.set_channel_types("eeg")
     sInfo.set_channel_units("microvolts")
@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     # connect to NeuroSky TGMA device through COM, and forward data to LSL stream
     neuropy = NeuroPy3("COM5")
-    neuropy.setCallBack("rawValue", push_sample_to_stream)
+    neuropy.setCallBack("rawVoltage", push_sample_to_stream)
     neuropy.setCallBack("poorSignal", display_signal_quality)
 
     neuropy.start()
