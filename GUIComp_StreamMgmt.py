@@ -73,6 +73,7 @@ class EEGStreamManager:
         self.record_file = None  # Recording file object
         self.record_file_name = None  # Recording file name
         self.device_info = None
+        self.record_button = None  # Recording button reference
 
     def add_conn_menu_on_toolbar(self, toolbar):
         """Add connection menu"""
@@ -99,16 +100,17 @@ class EEGStreamManager:
         record_menu.addAction("Record Whole Stream").triggered.connect(self.record_whole_stream)
 
         # 创建工具按钮并关联菜单
-        record_button = GUI_Utils.transform_menu_to_toolbutton("🎦", record_menu)
+        self.record_button = GUI_Utils.transform_menu_to_toolbutton("🎦", record_menu)
 
         # 添加工具按钮到工具栏
-        toolbar.addWidget(record_button)
+        toolbar.addWidget(self.record_button)
 
     def record_current_channel(self):
         """Handle recording of the current selected channel"""
         if self.recording:
             # 停止录制
             self.recording = False
+            self.record_button.setText("🎦")
             self.status_bar.showMessage("Recording stopped")
             self.close_recording_file()
         else:
@@ -118,6 +120,7 @@ class EEGStreamManager:
 
             # 开始录制
             self.recording = True
+            self.record_button.setText("⏹️")
             self.open_recording_file()
 
             self.status_bar.showMessage(
@@ -167,8 +170,8 @@ class EEGStreamManager:
                 'label': channel_names[i] if channel_names[i] else f"Channel_{i}",
                 'dimension': 'uV',
                 'sample_rate': sample_rate,
-                'physical_min': -1000,
-                'physical_max': 1000,
+                'physical_min': -500,
+                'physical_max': 500,
                 'digital_min': -32768,
                 'digital_max': 32767,
                 'prefilter': '',
@@ -240,7 +243,6 @@ class EEGStreamManager:
             if self.stream.n_new_samples < 1:
                 return
 
-            # Get data from all channels
             data, _ = self.get_new_data_from_stream()
 
             if data is not None:
@@ -261,6 +263,7 @@ class EEGStreamManager:
         """Save data to an EDF+ file"""
         channel_count = data.shape[0]
         sample_list = [data[i, :] * 1e6 for i in range(channel_count)]  # Convert to microvolts
+        print("saving data: ",sample_list)
         self.record_file.writeSamples(sample_list)
 
     def get_new_data_from_stream(self):
