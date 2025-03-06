@@ -10,6 +10,14 @@
 		python NeuroSkyTGAM-LSL-Bridge.py
 
 
+-----------------------------
+相关用法：
+* NeuroSkyTGAM-LSL-Bridge.py独立运行，负责把TGAM的数据转发成LSL流。
+* main_window.py对LSL数据流进行实时处理和显示。
+
+* NeuroPy3.py是被NeuroSkyTGAM-LSL-Bridge.py调用的库。但也可以直接运行。直接运行时测试设备采样率，以及读取接口数据。
+
+
 
 
 
