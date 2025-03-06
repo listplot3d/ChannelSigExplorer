@@ -1,10 +1,10 @@
 import logging
 import os
 import traceback
-from enum import Enum
 import mne
 import numpy as np
 from datetime import datetime
+import time
 import pyedflib
 from pyqtgraph.Qt import QtCore, QtWidgets
 from mne_lsl.lsl import resolve_streams
@@ -12,7 +12,10 @@ from mne_lsl.stream import StreamLSL
 from GUIComp_Utils import GUI_Utils
 from indicators.__Indicator_Global_Cfg import Indicator_Globals
 
+
 mne.set_log_level('WARNING')  # Set MNE log level to WARNING
+__DEBUG_MODE__ = False
+
 
 class DeviceInfo:
     """Device information class, including channel selection, sample frequency, and device name"""
@@ -28,7 +31,7 @@ class DeviceInfo:
             f"sample_freq={self.sample_freq} Hz)"
         )
 
-class DevicesInfo:
+class DeviceInfoDatabase:
     """Collection of channels and sampling frequencies for all devices"""
 
     # Muse
@@ -55,14 +58,15 @@ class DevicesInfo:
 
     # TGMA
     TGMA_ALL = DeviceInfo(["Fp1", "Fp2"],
-                          256,
+                          512,
                           "TGMA All")
 
-    TGMA = DeviceInfo(["Fp1"], 256,
+    TGMA = DeviceInfo(["Fp1"], 512,
                       "TGMA")
 
 
 class EEGStreamManager:
+
 
     def __init__(self, main_window):
         self.main_window = main_window
@@ -75,18 +79,21 @@ class EEGStreamManager:
         self.device_info = None
         self.record_button = None  # Recording button reference
         self.data_buffer = None  # 新增数据缓冲区
+        self.debug_counter = 0  # 新增调试计数器
+        self.debug_sample_counter = 0  # 替换原有的debug_counter
+        self.debug_last_print_time = time.time()  # 新增时间戳记录
 
     def add_conn_menu_on_toolbar(self, toolbar):
         """Add connection menu"""
         connect_menu = QtWidgets.QMenu("🎧", toolbar)
         connect_menu.addAction("* Muse 2016 (via BlueMuse)").triggered.connect(
-            lambda: self.connect_eeg_stream(DevicesInfo.MUSE))
+            lambda: self.connect_eeg_stream(DeviceInfoDatabase.MUSE))
         # connect_menu.addAction("Muse_S").triggered.connect(
         #     lambda: self.connect_eeg_stream(DevicesInfo.MUSE_S))
         connect_menu.addAction("* LSL Player (via MNE-LSL)").triggered.connect(
-            lambda: self.connect_eeg_stream(DevicesInfo.PLAYER))
+            lambda: self.connect_eeg_stream(DeviceInfoDatabase.PLAYER))
         connect_menu.addAction("* TGMA (via TGAM-LSL-Bridge)").triggered.connect(
-            lambda: self.connect_eeg_stream(DevicesInfo.TGMA))
+            lambda: self.connect_eeg_stream(DeviceInfoDatabase.TGMA))
 
         connect_button = GUI_Utils.transform_menu_to_toolbutton("🔗", connect_menu)
         toolbar.addWidget(connect_button)
@@ -152,8 +159,8 @@ class EEGStreamManager:
                 'label': channel_names[i] if channel_names[i] else f"Channel_{i}",
                 'dimension': 'uV',
                 'sample_rate': sample_rate,
-                'physical_min': -500,
-                'physical_max': 500,
+                'physical_min': -5000,
+                'physical_max': 5000,
                 'digital_min': -32768,
                 'digital_max': 32767,
                 'prefilter': '',
@@ -161,6 +168,43 @@ class EEGStreamManager:
             })
         self.record_file.setSignalHeaders(signal_headers)
         self.data_buffer = np.empty((channel_count, 0))  # 初始化缓冲区
+
+
+    def check_newdata_and_process(self):
+        """Periodically update the display and save the latest data"""
+        global __DEBUG_MODE__
+        try:
+            if self.stream.n_new_samples < 1:
+                return
+
+            data, _ = self.get_new_data_from_stream()
+
+            if data is None:
+                return
+
+
+            if __DEBUG_MODE__:
+                samples_this_call = data.shape[1]  # 获取本次调用的样本数
+                self.debug_sample_counter += samples_this_call
+
+                # 计算时间差
+                current_time = time.time()
+                if current_time - self.debug_last_print_time >= 1.0:
+                    timestamp = datetime.now().strftime("%H:%M:%S")
+                    print(f"__DEBUG_MODE__[{timestamp}] Received samples/s: {self.debug_sample_counter}")
+                    self.debug_sample_counter = 0
+                    self.debug_last_print_time = current_time
+
+            # 原有数据处理逻辑保持不变
+            selected_channel_data = data
+            for handler in self.main_window.loaded_indicators:
+                handler.process_new_data_and_update_plot(selected_channel_data)
+
+            if self.recording and self.record_file:
+                self.save_data_to_file(data)
+        except Exception as e:
+            traceback.print_exc()
+            self.status_bar.showMessage("failed to process new data")
 
     def save_data_to_file(self, data):
         """Save data to an EDF+ file"""
@@ -233,29 +277,7 @@ class EEGStreamManager:
         """Start a timer"""
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.check_newdata_and_process)
-        self.timer.start(30)  # Update every 30 ms
-
-    def check_newdata_and_process(self):
-        """Periodically update the display and save the latest data"""
-        try:
-            if self.stream.n_new_samples < 1:
-                return
-
-            data, _ = self.get_new_data_from_stream()
-
-            if data is not None:
-                # Display data from the selected channels
-                selected_channel_data = data
-                # Update the specified channel in the graphical interface
-                for handler in self.main_window.loaded_indicators:
-                    handler.process_new_data_and_update_plot(selected_channel_data)
-
-                # If recording, save data from all channels
-                if self.recording and self.record_file:
-                    self.save_data_to_file(data)
-        except Exception as e:
-            traceback.print_exc()
-            self.status_bar.showMessage("failed to process new data")
+        self.timer.start(50)  # Update every 50 ms
 
     def get_new_data_from_stream(self):
         """Get data from all channels in the EEG stream"""

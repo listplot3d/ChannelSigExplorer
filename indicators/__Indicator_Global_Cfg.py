@@ -30,5 +30,5 @@ class Indicator_Globals:
     If a better solution is found in the future, we can revisit this design.
     """
 
-    stream_freq = 256  # Default sampling frequency
+    stream_freq = 512  # Default sampling frequency
     logging_level = logging.INFO  # Default logging level

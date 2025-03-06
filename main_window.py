@@ -3,6 +3,7 @@ import os
 import sys
 import importlib.util
 import traceback
+import time
 
 from pyqtgraph.Qt import QtWidgets, QtCore
 import pyqtgraph.dockarea as pg_dockarea
