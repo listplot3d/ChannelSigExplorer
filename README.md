@@ -35,6 +35,8 @@ more details could be found in [introduction](introduction) folder.
 
 ----------------
 ## Contact
-Currently I am using this software for exploration of sleeping / meditation. 
-If you are doing research on similar direction, I would be very 
-happy if received your contact message to listplot3d_dev[at]163.com
+    listplot3d_dev[at]163.com
+Currently I am using this software for personal exploration of sleeping / meditation. 
+If you are doing research on similar direction, I would be very happy if received 
+your contact message.
+
