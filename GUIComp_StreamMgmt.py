@@ -91,19 +91,19 @@ class EEGStreamManager:
         connect_button = GUI_Utils.transform_menu_to_toolbutton("🔗", connect_menu)
         toolbar.addWidget(connect_button)
 
+
     def add_record_menu_on_toolbar(self, toolbar):
         """Add recording menu as a toolbutton"""
-        # 创建一个菜单
-        record_menu = QtWidgets.QMenu("🎦", toolbar)
+        # 创建录制菜单
+        record_menu = QtWidgets.QMenu("recording", toolbar)
+        self.record_channel_action = record_menu.addAction("Current Channel")
+        self.record_channel_action.triggered.connect(self.record_current_channel)
 
-        # 添加选项
-        record_menu.addAction("Record Current Channel").triggered.connect(self.record_current_channel)
-        record_menu.addAction("Record Whole Stream").triggered.connect(self.record_whole_stream)
-
-        # 创建工具按钮并关联菜单
-        self.record_button = GUI_Utils.transform_menu_to_toolbutton("🎦", record_menu)
-
-        # 添加工具按钮到工具栏
+        # self.record_stream_action = record_menu.addAction("Whole Stream")
+        # self.record_stream_action.triggered.connect(self.record_whole_stream)
+        
+        # 创建工具按钮
+        self.record_button = GUI_Utils.transform_menu_to_toolbutton("🔴", record_menu)
         toolbar.addWidget(self.record_button)
 
     def record_current_channel(self):
@@ -111,7 +111,7 @@ class EEGStreamManager:
         if self.recording:
             # 停止录制
             self.recording = False
-            self.record_button.setText("🎦")
+            self.record_button.setText("🔴")
             self.status_bar.showMessage("Recording stopped")
             self.close_recording_file()
         else:
@@ -121,9 +121,9 @@ class EEGStreamManager:
 
             # 开始录制
             self.recording = True
-            self.record_button.setText("⏹️")
+            self.record_button.setText("🟥")
+            self.record_channel_action.setText("Current Channel")  # 变为实心方块
             self.open_recording_file()
-
             self.status_bar.showMessage(
                 f"Recording channels {self.device_info.channel_picks} to {self.record_file_name}")
 
@@ -132,25 +132,6 @@ class EEGStreamManager:
         title = "To Be Implemented"
         text = "Your contribution to the source repository is more than welcome!"
         QtWidgets.QMessageBox.information(None, title, text)
-
-    def toggle_recording(self):
-        """Toggle recording state"""
-        if self.recording:
-            # Stop recording
-            self.recording = False
-            self.record_button.setText("🎦")
-            self.status_bar.showMessage("recording stopped")
-            self.close_recording_file()
-        else:
-            if not self.stream:
-                self.status_bar.showMessage("please connect stream before recording")
-                return
-
-            # Start recording
-            self.recording = True
-            self.record_button.setText("⏹️")
-            self.open_recording_file()
-            self.status_bar.showMessage(f"recording channels{self.device_info.channel_picks} to {self.record_file_name}")
 
     def open_recording_file(self):
         """Open an EDF+ file for recording"""
