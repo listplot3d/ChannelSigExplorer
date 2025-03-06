@@ -57,6 +57,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.stream_mgr = EEGStreamManager(self)  # Stream management functionality, initialized here
         self.stream_mgr.add_conn_menu_on_toolbar(tool_bar)
         self.stream_mgr.add_record_menu_on_toolbar(tool_bar)
+        
+        # Add a spacer to push the GitHub link to the right
+        spacer = QtWidgets.QWidget()
+        spacer.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        tool_bar.addWidget(spacer)
+        
+        # Add GitHub link label
+        github_label = QtWidgets.QLabel('<a href="https://github.com/listplot3d/ChannelSigExplorer/">Help</a>')
+        github_label.setOpenExternalLinks(True)
+        github_label.setTextFormat(QtCore.Qt.TextFormat.RichText)
+        github_label.setStyleSheet("QLabel { padding-right: 10px; }")
+        tool_bar.addWidget(github_label)
 
     def init_file_browser(self):
         """Initialize the indicator file browser"""
