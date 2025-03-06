@@ -1,0 +1,17 @@
+1.将蓝牙串口适配器连接到PC
+2.确认COM端口：操作系统->设置->设备管理器
+3.确认NeuroSkyTGAM-LSL-Bridge.py中的COM端口（main）与上述相同
+4.在当前文件夹中，
+
+	- 运行下面命令，将测试设备通讯。若每秒采样数在512hz附近则OK了：
+		python NeuroPy3.py
+
+	- 运行以下命令，将把TGAM数据转发成LSL流：
+		python NeuroSkyTGAM-LSL-Bridge.py
+
+
+
+
+
+
+
