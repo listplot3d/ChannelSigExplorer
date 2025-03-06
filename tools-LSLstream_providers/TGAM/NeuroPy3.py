@@ -31,6 +31,7 @@
 # 2024.12.23 modified so be able to run with Win11+Python3.12, by Shawn Li
 # 2025.02.06 modifed little-endian issue for bands according to NeuroSky Doc
 # 2025.03.04 added __rawVoltage
+# 2025.03.06 found and fixed issue: multiple callbacks for same rawvalue
 
 import serial
 import time
@@ -167,11 +168,11 @@ class NeuroPy3(object):
                             i = i + 1
                             val0 = int(payload[i], 16)
                             i = i + 1
-                            self.rawValue = val0 * 256 + int(payload[i], 16)
-                            if self.rawValue >= 32768:
-                                self.rawValue = self.rawValue - 65536
-
-                            self.rawVoltage = self.rawValue * (1.8 / 4096) / 2000
+                            rawValue = val0 * 256 + int(payload[i], 16)
+                            if rawValue >= 32768:
+                                rawValue = rawValue - 65536
+                            self.rawValue = rawValue
+                            self.rawVoltage = rawValue * (1.8 / 4096) / 2000
                             # print(self.rawValue)
 
                         elif (code == '83'):  # ASIC_EEG_POWER
@@ -401,17 +402,27 @@ class NeuroPy3(object):
 
 if __name__ == '__main__':
     neuropy = NeuroPy3("COM5")
-
+    rawValNum = 0
+    rawVolNum = 0
     def rawValue_callback(value):
-        # print("rawValue is: ", value)
-        return None
+        global rawValNum
+        rawValNum = rawValNum + 1
 
+    def rawVoltage_callback(value):
+        global rawVolNum
+        rawVolNum = rawVolNum + 1
+
+    neuropy.setCallBack("rawVoltage", rawVoltage_callback)
     neuropy.setCallBack("rawValue", rawValue_callback)
 
     neuropy.start()
     try:
         while True:
-            time.sleep(0.2)
+            time.sleep(1)
+            formatted_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+            print(formatted_time, " rcvd samples: ", rawValNum,":", rawVolNum)
+            rawValNum =0
+            rawVolNum =0
     except KeyboardInterrupt:
         print("\n* Session stopped\n")
     finally:
