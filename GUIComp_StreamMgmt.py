@@ -74,6 +74,7 @@ class EEGStreamManager:
         self.record_file_name = None  # Recording file name
         self.device_info = None
         self.record_button = None  # Recording button reference
+        self.data_buffer = None  # 新增数据缓冲区
 
     def add_conn_menu_on_toolbar(self, toolbar):
         """Add connection menu"""
@@ -178,6 +179,22 @@ class EEGStreamManager:
                 'transducer': ''
             })
         self.record_file.setSignalHeaders(signal_headers)
+        self.data_buffer = np.empty((channel_count, 0))  # 初始化缓冲区
+
+    def save_data_to_file(self, data):
+        """Save data to an EDF+ file"""
+        # 将新数据添加到缓冲区
+        self.data_buffer = np.hstack((self.data_buffer, data))
+        
+        required_samples = self.device_info.sample_freq
+        if self.data_buffer.shape[1] >= required_samples:
+            # 提取满1秒的数据
+            data_to_write = self.data_buffer[:, :required_samples]
+            self.data_buffer = self.data_buffer[:, required_samples:]
+            
+            # 转换为微伏并写入文件
+            sample_list = [data_to_write[i, :] * 1e6 for i in range(data_to_write.shape[0])]
+            self.record_file.writeSamples(sample_list)
 
     def close_recording_file(self):
         """Close the EDF+ file"""
@@ -258,13 +275,6 @@ class EEGStreamManager:
         except Exception as e:
             traceback.print_exc()
             self.status_bar.showMessage("failed to process new data")
-
-    def save_data_to_file(self, data):
-        """Save data to an EDF+ file"""
-        channel_count = data.shape[0]
-        sample_list = [data[i, :] * 1e6 for i in range(channel_count)]  # Convert to microvolts
-        print("saving data: ",sample_list)
-        self.record_file.writeSamples(sample_list)
 
     def get_new_data_from_stream(self):
         """Get data from all channels in the EEG stream"""
