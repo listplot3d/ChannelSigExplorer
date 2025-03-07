@@ -10,10 +10,13 @@ import pyqtgraph.dockarea as pg_dockarea
 from GUIComp_StreamMgmt import EEGStreamManager
 
 
+
 class MainWindow(QtWidgets.QMainWindow):
     """Main Window Class"""
 
-    def __init__(self):
+    def __init__(self,debug_mode=False):
+        self.debug_mode = debug_mode
+
         super().__init__()
         self.setWindowTitle("Real-TIme Single-Channel EEG Explorer")
         self.resize(1000, 400)
@@ -55,7 +58,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_toolbar(self):
         """Initialize the toolbar"""
         tool_bar = self.addToolBar("Toolbar")
-        self.stream_mgr = EEGStreamManager(self)  # Stream management functionality, initialized here
+        self.stream_mgr = EEGStreamManager(self,self.debug_mode)  # Stream management functionality, initialized here
+
         self.stream_mgr.add_conn_menu_on_toolbar(tool_bar)
         self.stream_mgr.add_record_menu_on_toolbar(tool_bar)
         
@@ -288,9 +292,11 @@ def check_pycache_and_compile():
     #     print("Detected existing __pycache__. Skipping compilation.")
 
 if __name__ == "__main__":
+    debug_mode = 'debug' in sys.argv
+
     check_pycache_and_compile()
 
     app = QtWidgets.QApplication([])
-    win = MainWindow()
+    win = MainWindow(debug_mode)
     win.show()
     app.exec()

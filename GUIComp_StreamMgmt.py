@@ -14,7 +14,6 @@ from indicators.__Indicator_Global_Cfg import Indicator_Globals
 
 
 mne.set_log_level('WARNING')  # Set MNE log level to WARNING
-__DEBUG_MODE__ = False
 
 
 class DeviceInfo:
@@ -42,10 +41,12 @@ class DeviceInfoDatabase:
     MUSE = DeviceInfo(["AF7"],
                       256,
                       "Muse")
-    #
+
+    #### Muse S + BlueMuse + mne-lsl viewer will hang after a few minutes due to freq config problem"""
     # MUSE_S = DeviceInfo(["AF7"],
-    #                     512,  # BlueMuse LSL shows 256, but the actual rate is 512 Hz. Use this value here.
-    #                     "Muse S")
+    #                      512,  # BlueMuse shows 512, marked 256hz in stream, and actual push rate is
+    #                                         is 512 Hz. Use this value here.
+                         # "Muse S")
 
     # MNE-LSL Player
     PLAYER_ALL = DeviceInfo(["EEG Fpz-Cz", "EEG Pz-Oz"],
@@ -68,7 +69,7 @@ class DeviceInfoDatabase:
 class EEGStreamManager:
 
 
-    def __init__(self, main_window):
+    def __init__(self, main_window,debug_mode = False):
         self.main_window = main_window
         self.status_bar = main_window.status_bar
         self.stream: StreamLSL = None  # LSL stream instance
@@ -79,6 +80,7 @@ class EEGStreamManager:
         self.device_info = None
         self.record_button = None  # Recording button reference
         self.data_buffer = None  # 新增数据缓冲区
+        self.debug_mode = debug_mode
         self.debug_counter = 0  # 新增调试计数器
         self.debug_sample_counter = 0  # 替换原有的debug_counter
         self.debug_last_print_time = time.time()  # 新增时间戳记录
@@ -88,8 +90,8 @@ class EEGStreamManager:
         connect_menu = QtWidgets.QMenu("🎧", toolbar)
         connect_menu.addAction("* Muse 2016 (via BlueMuse)").triggered.connect(
             lambda: self.connect_eeg_stream(DeviceInfoDatabase.MUSE))
-        # connect_menu.addAction("Muse_S").triggered.connect(
-        #     lambda: self.connect_eeg_stream(DevicesInfo.MUSE_S))
+        # connect_menu.addAction("* Muse S (via BlueMuse)").triggered.connect(
+        #     lambda: self.connect_eeg_stream(DeviceInfoDatabase.MUSE_S))
         connect_menu.addAction("* LSL Player (via MNE-LSL)").triggered.connect(
             lambda: self.connect_eeg_stream(DeviceInfoDatabase.PLAYER))
         connect_menu.addAction("* TGMA (via TGAM-LSL-Bridge)").triggered.connect(
@@ -172,7 +174,6 @@ class EEGStreamManager:
 
     def check_newdata_and_process(self):
         """Periodically update the display and save the latest data"""
-        global __DEBUG_MODE__
         try:
             if self.stream.n_new_samples < 1:
                 return
@@ -183,7 +184,7 @@ class EEGStreamManager:
                 return
 
 
-            if __DEBUG_MODE__:
+            if self.debug_mode:
                 samples_this_call = data.shape[1]  # 获取本次调用的样本数
                 self.debug_sample_counter += samples_this_call
 
@@ -191,7 +192,7 @@ class EEGStreamManager:
                 current_time = time.time()
                 if current_time - self.debug_last_print_time >= 1.0:
                     timestamp = datetime.now().strftime("%H:%M:%S")
-                    print(f"__DEBUG_MODE__[{timestamp}] Received samples/s: {self.debug_sample_counter}")
+                    print(f"DEBUG:[{timestamp}] Received samples/s: {self.debug_sample_counter}")
                     self.debug_sample_counter = 0
                     self.debug_last_print_time = current_time
 
@@ -281,7 +282,8 @@ class EEGStreamManager:
 
     def get_new_data_from_stream(self):
         """Get data from all channels in the EEG stream"""
-        secs_for_new_data = self.stream.n_new_samples / self.device_info.sample_freq
+        # secs_for_new_data = self.stream.n_new_samples / self.device_info.sample_freq
+        secs_for_new_data = self.stream.n_new_samples / 256
         data = self.stream.get_data(winsize=secs_for_new_data, picks=self.device_info.channel_picks)  # picks=None means all channels
         return data
 
