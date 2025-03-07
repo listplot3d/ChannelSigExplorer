@@ -282,8 +282,7 @@ class EEGStreamManager:
 
     def get_new_data_from_stream(self):
         """Get data from all channels in the EEG stream"""
-        # secs_for_new_data = self.stream.n_new_samples / self.device_info.sample_freq
-        secs_for_new_data = self.stream.n_new_samples / 256
+        secs_for_new_data = self.stream.n_new_samples / self.device_info.sample_freq
         data = self.stream.get_data(winsize=secs_for_new_data, picks=self.device_info.channel_picks)  # picks=None means all channels
         return data
 
