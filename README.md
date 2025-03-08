@@ -14,14 +14,25 @@ And it was originally composed to fit the place below:
 ![app_positioning](introduction/app_positioning.png)
 
 ---------------
+## Current Features
+* supported devices: 
+    - Neurosky TGAM
+    - Muse 2016
+    - MNE-LSL Player
+* supported indicators:
+    - raw wave display
+    - down sampled wave
+    - power spectrum histogram
+    - αβγθδ wave bands display
+    - wavelet transform
+    - AI based sleep staging
+* recording format:
+    - edf+
+---------------
 ## How to Run
 #### 1. Hardware requirement
-##### Computer
   * this software is tested based on PC with metrics: 2.60Ghz CPU + 8G Memory + Win11 (no graphic card)
   * if with less hardware resource, e.g.2.0Ghz CPU + 4G Memory + Any OS, it should also be alright to run indicators in tutorial. But if you write own advanced indicators, or connect to new device, then it may change hardware requirements.
-##### Supported Devices
-  * support for two hardware devices are implemented in sample code: Muse 2016 and NeuroSky TGAM
-  * "mne-lsl player" can be used as device simulator.
 
 #### 2.Setup Environment
     conda create -n py12_env python=3.12
