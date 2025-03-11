@@ -1,4 +1,4 @@
-torch
+
 pyside6
 pyqtgraph
 pywavelets
