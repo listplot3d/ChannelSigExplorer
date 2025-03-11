@@ -6,3 +6,5 @@ pathlib
 mne-lsl
 pyedflib
 pyserial
+yasa
+
