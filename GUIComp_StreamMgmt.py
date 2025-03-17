@@ -160,7 +160,7 @@ class EEGStreamManager:
             signal_headers.append({
                 'label': channel_names[i] if channel_names[i] else f"Channel_{i}",
                 'dimension': 'uV',
-                'sample_rate': sample_rate,
+                'sample_frequency': sample_rate,  # Changed from 'sample_rate' to 'sample_frequency'
                 'physical_min': -5000,
                 'physical_max': 5000,
                 'digital_min': -32768,
@@ -169,8 +169,8 @@ class EEGStreamManager:
                 'transducer': ''
             })
         self.record_file.setSignalHeaders(signal_headers)
-        self.data_buffer = np.empty((channel_count, 0))  # 初始化缓冲区
-
+        # Initialize buffer with proper dimensions
+        self.data_buffer = np.empty((channel_count, 0))
 
     def check_newdata_and_process(self):
         """Periodically update the display and save the latest data"""
@@ -208,6 +208,12 @@ class EEGStreamManager:
             self.status_bar.showMessage("failed to process new data")
 
     def save_data_to_file(self, data):
+        # Check if data_buffer is None and initialize if needed 
+        # although numpy 1.x don't need below part of code, but numpy 2.x needs it
+        if self.data_buffer is None:
+            channel_count = len(self.device_info.channel_picks)
+            self.data_buffer = np.empty((channel_count, 0))
+            
         """Save data to an EDF+ file"""
         # 将新数据添加到缓冲区
         self.data_buffer = np.hstack((self.data_buffer, data))
