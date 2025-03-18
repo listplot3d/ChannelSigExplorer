@@ -4,17 +4,19 @@ import sys
 import importlib.util
 import traceback
 import time
+import argparse
 
 from pyqtgraph.Qt import QtWidgets, QtCore
 import pyqtgraph.dockarea as pg_dockarea
 from GUIComp_StreamMgmt import EEGStreamManager
+from GUIComp_FileDataMgmt import FileDataManager
 
 
 
 class MainWindow(QtWidgets.QMainWindow):
     """Main Window Class"""
 
-    def __init__(self,debug_mode=False):
+    def __init__(self, debug_mode=False, mode="realtime"):
         self.debug_mode = debug_mode
 
         super().__init__()
@@ -22,7 +24,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.resize(1000, 400)
 
         # Initialize components
-        self.init_state()
+        self.init_state(mode)
         self.init_status_bar()
         self.init_layout()
 
@@ -30,14 +32,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ------------------------ Initialization ------------------------
 
-    def init_state(self):
+    def init_state(self, mode):
         """Initialize state variables"""
         self.stream_mgr: EEGStreamManager
+        self.file_mgr: FileDataManager
 
         # Store loaded indicator modules
         self.loaded_indicators = []
 
         self.loaded_docks = {}  # {file_name: (dock, indicator_handler)}
+        
+        # 模式标志：实时模式或离线模式
+        self.mode = mode  # "realtime" 或 "offline"
 
     def init_status_bar(self):
         """Initialize the status bar"""
@@ -58,10 +64,21 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_toolbar(self):
         """Initialize the toolbar"""
         tool_bar = self.addToolBar("Toolbar")
-        self.stream_mgr = EEGStreamManager(self,self.debug_mode)  # Stream management functionality, initialized here
+        
+        # 添加模式切换按钮
+        self.mode_button = QtWidgets.QPushButton("实时模式")
+        self.mode_button.clicked.connect(self.toggle_mode)
+        tool_bar.addWidget(self.mode_button)
+        
+        # 添加分隔符
+        tool_bar.addSeparator()
+        
+        # 初始化流管理器和文件管理器
+        self.stream_mgr = EEGStreamManager(self, self.debug_mode)  # Stream management functionality
+        self.file_mgr = FileDataManager(self, self.debug_mode)  # File data management functionality
 
-        self.stream_mgr.add_conn_menu_on_toolbar(tool_bar)
-        self.stream_mgr.add_record_menu_on_toolbar(tool_bar)
+        # 根据当前模式显示相应的管理器控件
+        self.update_toolbar_by_mode(tool_bar)
         
         # Add a spacer to push the GitHub link to the right
         spacer = QtWidgets.QWidget()
@@ -74,6 +91,49 @@ class MainWindow(QtWidgets.QMainWindow):
         github_label.setTextFormat(QtCore.Qt.TextFormat.RichText)
         github_label.setStyleSheet("QLabel { padding-right: 10px; }")
         tool_bar.addWidget(github_label)
+
+    def update_toolbar_by_mode(self, toolbar):
+        """根据当前模式更新工具栏"""
+        # 清除现有的动态控件
+        actions_to_remove = []
+        for action in toolbar.actions():
+            if action.text() not in ["实时模式", "离线模式", "Help"]:
+                actions_to_remove.append(action)
+        
+        for action in actions_to_remove:
+            toolbar.removeAction(action)
+        
+        if self.mode == "realtime":
+            self.stream_mgr.add_conn_menu_on_toolbar(toolbar)
+            self.stream_mgr.add_record_menu_on_toolbar(toolbar)
+        else:  # offline mode
+            self.file_mgr.add_file_menu_on_toolbar(toolbar)
+            self.file_mgr.add_timeline_controls_on_toolbar(toolbar)
+
+    def toggle_mode(self):
+        """切换实时/离线模式"""
+        if self.mode == "realtime":
+            self.mode = "offline"
+            self.mode_button.setText("离线模式")
+            # 关闭所有已加载的指标
+            self.close_all_indicators()
+            # 更新工具栏
+            self.update_toolbar_by_mode(self.addToolBar("Toolbar"))
+            self.status_bar.showMessage("已切换到离线模式")
+        else:
+            self.mode = "realtime"
+            self.mode_button.setText("实时模式")
+            # 关闭所有已加载的指标
+            self.close_all_indicators()
+            # 更新工具栏
+            self.update_toolbar_by_mode(self.addToolBar("Toolbar"))
+            self.status_bar.showMessage("已切换到实时模式")
+
+    def close_all_indicators(self):
+        """关闭所有已加载的指标"""
+        for file_name in list(self.loaded_docks.keys()):
+            dock, _ = self.loaded_docks[file_name]
+            dock.close()
 
     def init_file_browser(self):
         """Initialize the indicator file browser"""
@@ -292,11 +352,28 @@ def check_pycache_and_compile():
     #     print("Detected existing __pycache__. Skipping compilation.")
 
 if __name__ == "__main__":
-    debug_mode = 'debug' in sys.argv
+    import argparse
+    
+    # 创建命令行参数解析器
+    parser = argparse.ArgumentParser(description='ChannelSigExplorer - EEG数据分析工具')
+    parser.add_argument('--debug', type=str, choices=['true', 'false'], default='false',
+                        help='是否启用调试模式 (true/false)')
+    parser.add_argument('--mode', type=str, choices=['realtime', 'offline'], default='realtime',
+                        help='运行模式: realtime(实时模式) 或 offline(离线模式)')
+    
+    # 解析命令行参数
+    args = parser.parse_args()
+    
+    # 设置调试模式和运行模式
+    debug_mode = args.debug.lower() == 'true'
+    mode = args.mode.lower()
+    
+    # 输出当前设置
+    print(f"启动参数: 运行模式={mode}，调试模式={debug_mode}")
 
     check_pycache_and_compile()
 
-    app = QtWidgets.QApplication([])
-    win = MainWindow(debug_mode)
+    app = QtWidgets.QApplication([])  
+    win = MainWindow(debug_mode, mode)
     win.show()
     app.exec()

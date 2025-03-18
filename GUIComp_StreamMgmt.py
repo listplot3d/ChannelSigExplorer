@@ -88,7 +88,7 @@ class EEGStreamManager:
     def add_conn_menu_on_toolbar(self, toolbar):
         """Add connection menu"""
         connect_menu = QtWidgets.QMenu("🎧", toolbar)
-        connect_menu.addAction("* Muse 2016 (via BlueMuse)").triggered.connect(
+        connect_menu.addAction("* Muse 2016 (via BlueMuse LSL)").triggered.connect(
             lambda: self.connect_eeg_stream(DeviceInfoDatabase.MUSE))
         # connect_menu.addAction("* Muse S (via BlueMuse)").triggered.connect(
         #     lambda: self.connect_eeg_stream(DeviceInfoDatabase.MUSE_S))
