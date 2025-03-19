@@ -21,6 +21,8 @@ class Simple_Waveform_Raw_Handler(BaseIndicatorHandler):
         self.plot_widget = pg.PlotWidget(title="Real-time EEG Waveform")
         self.plot_widget.showGrid(x=True, y=True)
         self.plot_widget.setLabels(left='Amplitude (μV)', bottom='Time(s)')
+        self.plot_widget.getViewBox().setMouseEnabled(x=True, y=False)
+        
         self.plotted_wave = self.plot_widget.plot(pen='y')  # Plot the curve
         return self.plot_widget
 

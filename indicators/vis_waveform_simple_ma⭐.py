@@ -17,7 +17,8 @@ class Simple_Waveform_MA_Handler(BaseIndicatorHandler):
         self.plot_widget.setLabels(left='Amplitude (μV)')
         buttom_txt = f"TimeSeries (Update Interval = {self.indicator_update_interval} Seconds)"
         self.plot_widget.setLabel("bottom", buttom_txt)
-
+        self.plot_widget.getViewBox().setMouseEnabled(x=True, y=False)
+        
         self.plotted_wave = self.plot_widget.plot(pen='y')  # 曲线
         return self.plot_widget
 
