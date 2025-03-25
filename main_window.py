@@ -42,8 +42,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.loaded_docks = {}  # {file_name: (dock, indicator_handler)}
         
-        # 模式标志：实时模式或离线模式
-        self.mode = mode  # "realtime" 或 "offline"
+        # Mode flag: realtime mode or offline mode
+        self.mode = mode  # "realtime" or "offline"
 
     def init_status_bar(self):
         """Initialize the status bar"""
@@ -65,19 +65,19 @@ class MainWindow(QtWidgets.QMainWindow):
         """Initialize the toolbar"""
         tool_bar = self.addToolBar("Toolbar")
         
-        # 添加模式切换按钮
-        self.mode_button = QtWidgets.QPushButton("实时模式")
+        # Add mode switch button
+        self.mode_button = QtWidgets.QPushButton("Real-time Mode")
         self.mode_button.clicked.connect(self.toggle_mode)
         tool_bar.addWidget(self.mode_button)
         
-        # 添加分隔符
+        # Add separator
         tool_bar.addSeparator()
         
-        # 初始化流管理器和文件管理器
+        # Initialize stream manager and file manager
         self.stream_mgr = EEGStreamManager(self, self.debug_mode)  # Stream management functionality
         self.file_mgr = FileDataManager(self, self.debug_mode)  # File data management functionality
 
-        # 根据当前模式显示相应的管理器控件
+        # Display the corresponding manager controls based on the current mode
         self.update_toolbar_by_mode(tool_bar)
         
         # Add a spacer to push the GitHub link to the right
@@ -93,11 +93,11 @@ class MainWindow(QtWidgets.QMainWindow):
         tool_bar.addWidget(github_label)
 
     def update_toolbar_by_mode(self, toolbar):
-        """根据当前模式更新工具栏"""
-        # 清除现有的动态控件
+        """Update toolbar based on current mode"""
+        # Clear existing dynamic controls
         actions_to_remove = []
         for action in toolbar.actions():
-            if action.text() not in ["实时模式", "离线模式", "Help"]:
+            if action.text() not in ["Real-time Mode", "Offline Mode", "Help"]:
                 actions_to_remove.append(action)
         
         for action in actions_to_remove:
@@ -111,26 +111,26 @@ class MainWindow(QtWidgets.QMainWindow):
             self.file_mgr.add_timeline_controls_on_toolbar(toolbar)
 
     def toggle_mode(self):
-        """切换实时/离线模式"""
+        """Toggle between real-time/offline modes"""
         if self.mode == "realtime":
             self.mode = "offline"
-            self.mode_button.setText("离线模式")
-            # 关闭所有已加载的指标
+            self.mode_button.setText("Offline Mode")
+            # Close all loaded indicators
             self.close_all_indicators()
-            # 更新工具栏
+            # Update toolbar
             self.update_toolbar_by_mode(self.addToolBar("Toolbar"))
-            self.status_bar.showMessage("已切换到离线模式")
+            self.status_bar.showMessage("Switched to offline mode")
         else:
             self.mode = "realtime"
-            self.mode_button.setText("实时模式")
-            # 关闭所有已加载的指标
+            self.mode_button.setText("Real-time Mode")
+            # Close all loaded indicators
             self.close_all_indicators()
-            # 更新工具栏
+            # Update toolbar
             self.update_toolbar_by_mode(self.addToolBar("Toolbar"))
-            self.status_bar.showMessage("已切换到实时模式")
+            self.status_bar.showMessage("Switched to real-time mode")
 
     def close_all_indicators(self):
-        """关闭所有已加载的指标"""
+        """Close all loaded indicators"""
         for file_name in list(self.loaded_docks.keys()):
             dock, _ = self.loaded_docks[file_name]
             dock.close()
@@ -339,40 +339,30 @@ class MainWindow(QtWidgets.QMainWindow):
             event.accept()
 
 
-def check_pycache_and_compile():
-    """
-    检查 __pycache__ 是否存在，如果不存在，提示用户并模拟编译过程。
-    """
-    pycache_exists = os.path.exists("__pycache__")
-    if not pycache_exists:
-        print("Compiling for the first time... This may take a few moments.")
-        # time.sleep(5)  # 模拟编译耗时
-        # print("Compilation completed!")
-    # else:
-    #     print("Detected existing __pycache__. Skipping compilation.")
-
 if __name__ == "__main__":
     import argparse
     
-    # 创建命令行参数解析器
-    parser = argparse.ArgumentParser(description='ChannelSigExplorer - EEG数据分析工具')
+    # Create command line argument parser
+    parser = argparse.ArgumentParser(description='ChannelSigExplorer - EEG Data Analysis Tool')
     parser.add_argument('--debug', type=str, choices=['true', 'false'], default='false',
-                        help='是否启用调试模式 (true/false)')
+                        help='Enable debug mode (true/false)')
     parser.add_argument('--mode', type=str, choices=['realtime', 'offline'], default='realtime',
-                        help='运行模式: realtime(实时模式) 或 offline(离线模式)')
+                        help='Run mode: realtime (Real-time Mode) or offline (Offline Mode)')
     
-    # 解析命令行参数
+    # Parse command line arguments
     args = parser.parse_args()
     
-    # 设置调试模式和运行模式
+    # Set debug mode and run mode
     debug_mode = args.debug.lower() == 'true'
     mode = args.mode.lower()
     
-    # 输出当前设置
-    print(f"启动参数: 运行模式={mode}，调试模式={debug_mode}")
+    # Output current settings
+    print(f"Startup parameters: Run mode={mode}, Debug mode={debug_mode}")
 
-    check_pycache_and_compile()
-
+    if mode == 'offline':
+        print("Offline mode is not supported yet.")
+        exit(1)
+    
     app = QtWidgets.QApplication([])  
     win = MainWindow(debug_mode, mode)
     win.show()
