@@ -66,7 +66,7 @@ class DeviceInfoDatabase:
                       "TGMA")
 
     # Flexolink
-    FLEXOLINK = DeviceInfo(["Fp1"], 250,
+    FLEXOLINK = DeviceInfo(["Fpz"], 250,
                       "Flexo")
 
 
