@@ -65,6 +65,10 @@ class DeviceInfoDatabase:
     TGMA = DeviceInfo(["Fp1"], 512,
                       "TGMA")
 
+    # Flexolink
+    FLEXOLINK = DeviceInfo(["Fp1"], 250,
+                      "Flexo")
+
 
 class EEGStreamManager:
 
@@ -88,7 +92,7 @@ class EEGStreamManager:
     def add_conn_menu_on_toolbar(self, toolbar):
         """Add connection menu"""
         connect_menu = QtWidgets.QMenu("🎧", toolbar)
-        connect_menu.addAction("* Muse 2016 (via BlueMuse LSL)").triggered.connect(
+        connect_menu.addAction("* Muse 2016 (via BlueMuse)").triggered.connect(
             lambda: self.connect_eeg_stream(DeviceInfoDatabase.MUSE))
         # connect_menu.addAction("* Muse S (via BlueMuse)").triggered.connect(
         #     lambda: self.connect_eeg_stream(DeviceInfoDatabase.MUSE_S))
@@ -96,10 +100,10 @@ class EEGStreamManager:
             lambda: self.connect_eeg_stream(DeviceInfoDatabase.PLAYER))
         connect_menu.addAction("* TGMA (via TGAM-LSL-Bridge)").triggered.connect(
             lambda: self.connect_eeg_stream(DeviceInfoDatabase.TGMA))
-
+        connect_menu.addAction("* FlexoLink (via FlexoTool)").triggered.connect(
+            lambda: self.connect_eeg_stream(DeviceInfoDatabase.FLEXOLINK))
         connect_button = GUI_Utils.transform_menu_to_toolbutton("🔗", connect_menu)
         toolbar.addWidget(connect_button)
-
 
     def add_record_menu_on_toolbar(self, toolbar):
         """Add recording menu as a toolbutton"""
