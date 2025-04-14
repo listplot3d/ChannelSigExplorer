@@ -66,7 +66,9 @@ class DeviceInfoDatabase:
                       "TGMA")
 
     # Flexolink
-    FLEXOLINK = DeviceInfo(["Fpz"], 250,
+    FLEXOLINK_ALL = DeviceInfo(["Fpz-Raw", "Fpz-Filtered"], 250,
+                      "Flexo")
+    FLEXOLINK = DeviceInfo(["Fpz-Filtered"], 250,
                       "Flexo")
 
 
@@ -272,6 +274,9 @@ class EEGStreamManager:
             self.stream.connect()
             self.stream.pick("eeg")
 
+            assert "CPz" not in self.stream.ch_names  
+            self.stream.add_reference_channels("CPz")
+              
             self.start_timer()
             self.status_bar.showMessage(f"connected to {deviceInfo.channel_picks}")
 
