@@ -175,8 +175,8 @@ class EEGStreamManager:
                 'label': channel_names[i] if channel_names[i] else f"Channel_{i}",
                 'dimension': 'uV',
                 'sample_frequency': sample_rate,  # Changed from 'sample_rate' to 'sample_frequency'
-                'physical_min': -5000,
-                'physical_max': 5000,
+                'physical_min': -3276.8,
+                'physical_max': 3276.7,
                 'digital_min': -32768,
                 'digital_max': 32767,
                 'prefilter': '',
