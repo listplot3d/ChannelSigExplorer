@@ -90,6 +90,9 @@ class EEGStreamManager:
         self.debug_counter = 0  # 新增调试计数器
         self.debug_sample_counter = 0  # 替换原有的debug_counter
         self.debug_last_print_time = time.time()  # 新增时间戳记录
+        self.write_count = 0  # For tracking file write operations
+        self.first_write_time = None  # For tracking first write timestamp
+        self.total_written_samples = 0  # For tracking total written samples
 
     def add_conn_menu_on_toolbar(self, toolbar):
         """Add connection menu"""
@@ -160,6 +163,11 @@ class EEGStreamManager:
         # Create EDF+ file
         self.record_file = pyedflib.EdfWriter(self.record_file_name, channel_count, file_type=pyedflib.FILETYPE_EDFPLUS)
 
+        # Reset write count and first write time for new recording
+        self.write_count = 0
+        self.first_write_time = time.time()
+        self.total_written_samples = 0
+
         # Set signal parameters
         signal_headers = []
         for i in range(channel_count):
@@ -219,20 +227,34 @@ class EEGStreamManager:
         if self.data_buffer is None:
             channel_count = len(self.device_info.channel_picks)
             self.data_buffer = np.empty((channel_count, 0))
+            self.write_count = 0
+            self.first_write_time = time.time()
             
         """Save data to an EDF+ file"""
-        # 将新数据添加到缓冲区
+        # Add new data to buffer
         self.data_buffer = np.hstack((self.data_buffer, data))
         
         required_samples = self.device_info.sample_freq
         if self.data_buffer.shape[1] >= required_samples:
-            # 提取满1秒的数据
+            # Extract data for 1 second
             data_to_write = self.data_buffer[:, :required_samples]
             self.data_buffer = self.data_buffer[:, required_samples:]
             
-            # 转换为微伏并写入文件
+            # Convert to microvolts and write to file
             sample_list = [data_to_write[i, :] * 1e6 for i in range(data_to_write.shape[0])]
             self.record_file.writeSamples(sample_list)
+
+            # Update total written samples
+            self.total_written_samples += data_to_write.shape[1]
+            # Update write count and calculate sample rate every 10 writes
+            self.write_count += 1
+            # Fallback: ensure first_write_time is set
+            if self.first_write_time is None:
+                self.first_write_time = time.time()
+            if self.write_count % 10 == 0:
+                elapsed_time = time.time() - self.first_write_time
+                sample_rate = self.total_written_samples / elapsed_time
+                self.status_bar.showMessage(f"Write sampling rate: {sample_rate:.2f} samples/sec")
 
     def close_recording_file(self):
         """Close the EDF+ file"""
@@ -276,7 +298,7 @@ class EEGStreamManager:
 
             assert "CPz" not in self.stream.ch_names  
             self.stream.add_reference_channels("CPz")
-              
+
             self.start_timer()
             self.status_bar.showMessage(f"connected to {deviceInfo.channel_picks}")
 
