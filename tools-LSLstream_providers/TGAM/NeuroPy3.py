@@ -32,6 +32,7 @@
 # 2025.02.06 modifed little-endian issue for bands according to NeuroSky Doc
 # 2025.03.04 added __rawVoltage
 # 2025.03.06 found and fixed issue: multiple callbacks for same rawvalue
+# 2025.04.15 dont't print error message when closing, by Shawn Li
 
 import serial
 import time
@@ -123,72 +124,76 @@ class NeuroPy3(object):
 
     def __packetParser(self, srl):
         # "packetParser runs continously in a separate thread to parse packets from mindwave and update the corresponding variables"
-        while self.running:
-            p1 = srl.read(1).hex()  # read first 2 packets
-            p2 = srl.read(1).hex()
-            while (p1 != 'aa' or p2 != 'aa'):
-                p1 = p2
+        try:
+            while self.running:
+                p1 = srl.read(1).hex()  # read first 2 packets
                 p2 = srl.read(1).hex()
-            else:
-                if self.running == False:
-                    break
-                # a valid packet is available
-                self.__packetsReceived += 1
-                payload = []
-                checksum = 0
-                payloadLength = int(srl.read(1).hex(), 16)
-                for i in range(payloadLength):
-                    tempPacket = srl.read(1).hex()
-                    payload.append(tempPacket)
-                    checksum += int(tempPacket, 16)
-                checksum = ~checksum & 0x000000ff
-                if checksum == int(srl.read(1).hex(), 16):
-                    i = 0
+                while (p1 != 'aa' or p2 != 'aa'):
+                    p1 = p2
+                    p2 = srl.read(1).hex()
+                else:
+                    if self.running == False:
+                        break
+                    # a valid packet is available
+                    self.__packetsReceived += 1
+                    payload = []
+                    checksum = 0
+                    payloadLength = int(srl.read(1).hex(), 16)
+                    for i in range(payloadLength):
+                        tempPacket = srl.read(1).hex()
+                        payload.append(tempPacket)
+                        checksum += int(tempPacket, 16)
+                    checksum = ~checksum & 0x000000ff
+                    if checksum == int(srl.read(1).hex(), 16):
+                        i = 0
 
-                    while i < payloadLength:
-                        code = payload[i]
-                        if (code == 'd0'):
-                            print("Headset connected!")
-                        elif (code == 'd1' or code == 'd2' or code == 'd3' or code == 'd4'):
-                            self.eprint("Headset connection failed. errCode={}".format(code))
-                        elif(code == '02'):  # poorSignal
+                        while i < payloadLength:
+                            code = payload[i]
+                            if (code == 'd0'):
+                                print("Headset connected!")
+                            elif (code == 'd1' or code == 'd2' or code == 'd3' or code == 'd4'):
+                                self.eprint("Headset connection failed. errCode={}".format(code))
+                            elif(code == '02'):  # poorSignal
+                                    i = i + 1
+                                    self.poorSignal = int(payload[i], 16)
+                            elif(code == '04'):  # attention
+                                    i = i + 1
+                                    self.attention = int(payload[i], 16)
+                            elif(code == '05'):  # meditation
                                 i = i + 1
-                                self.poorSignal = int(payload[i], 16)
-                        elif(code == '04'):  # attention
+                                self.meditation = int(payload[i], 16)
+                            elif(code == '16'):  # blink strength
                                 i = i + 1
-                                self.attention = int(payload[i], 16)
-                        elif(code == '05'):  # meditation
-                            i = i + 1
-                            self.meditation = int(payload[i], 16)
-                        elif(code == '16'):  # blink strength
-                            i = i + 1
-                            self.blinkStrength = int(payload[i], 16)
-                        elif(code == '80'):  # raw value
-                            i = i + 1  # for length/it is not used since length =1 byte long and always=2
-                            i = i + 1
-                            val0 = int(payload[i], 16)
-                            i = i + 1
-                            rawValue = val0 * 256 + int(payload[i], 16)
-                            if rawValue >= 32768:
-                                rawValue = rawValue - 65536
-                            self.rawValue = rawValue
-                            self.rawVoltage = rawValue * (1.8 / 4096) / 2000
-                            # print(self.rawValue)
-
-                        elif (code == '83'):  # ASIC_EEG_POWER
-                            i = i + 1  # for length/it is not used since length =1 byte long and always=2
-                            bands = ['delta', 'theta', 'lowAlpha', 'highAlpha', 'lowBeta', 'highBeta',
-                                     'lowGamma', 'midGamma']
-                            for band in bands:
+                                self.blinkStrength = int(payload[i], 16)
+                            elif(code == '80'):  # raw value
+                                i = i + 1  # for length/it is not used since length =1 byte long and always=2
+                                i = i + 1
                                 val0 = int(payload[i], 16)
-                                val1 = int(payload[i + 1], 16)
-                                val2 = int(payload[i + 2], 16)
-                                value = val2 * 65536 + val1 * 256 + val0  # little endian
-                                setattr(self, band, value)
-                                i = i + 3
-                        else:
-                            pass
-                        i = i + 1
+                                i = i + 1
+                                rawValue = val0 * 256 + int(payload[i], 16)
+                                if rawValue >= 32768:
+                                    rawValue = rawValue - 65536
+                                self.rawValue = rawValue
+                                self.rawVoltage = rawValue * (1.8 / 4096) / 2000
+                                # print(self.rawValue)
+
+                            elif (code == '83'):  # ASIC_EEG_POWER
+                                i = i + 1  # for length/it is not used since length =1 byte long and always=2
+                                bands = ['delta', 'theta', 'lowAlpha', 'highAlpha', 'lowBeta', 'highBeta',
+                                         'lowGamma', 'midGamma']
+                                for band in bands:
+                                    val0 = int(payload[i], 16)
+                                    val1 = int(payload[i + 1], 16)
+                                    val2 = int(payload[i + 2], 16)
+                                    value = val2 * 65536 + val1 * 256 + val0  # little endian
+                                    setattr(self, band, value)
+                                    i = i + 3
+                            else:
+                                pass
+                            i = i + 1
+        except Exception:  
+            print("NeuroPy3: I/O Exception detected") 
+            pass
 
 
     def stop(self):
