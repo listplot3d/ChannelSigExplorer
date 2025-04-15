@@ -9,14 +9,13 @@ import argparse
 from pyqtgraph.Qt import QtWidgets, QtCore
 import pyqtgraph.dockarea as pg_dockarea
 from GUIComp_StreamMgmt import EEGStreamManager
-from GUIComp_FileDataMgmt import FileDataManager
 
 
 
 class MainWindow(QtWidgets.QMainWindow):
     """Main Window Class"""
 
-    def __init__(self, debug_mode=False, mode="realtime"):
+    def __init__(self, debug_mode=False):
         self.debug_mode = debug_mode
 
         super().__init__()
@@ -24,7 +23,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.resize(1000, 400)
 
         # Initialize components
-        self.init_state(mode)
+        self.init_state()
         self.init_status_bar()
         self.init_layout()
 
@@ -32,18 +31,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     # ------------------------ Initialization ------------------------
 
-    def init_state(self, mode):
+    def init_state(self):
         """Initialize state variables"""
         self.stream_mgr: EEGStreamManager
-        self.file_mgr: FileDataManager
 
         # Store loaded indicator modules
         self.loaded_indicators = []
 
         self.loaded_docks = {}  # {file_name: (dock, indicator_handler)}
-        
-        # Mode flag: realtime mode or offline mode
-        self.mode = mode  # "realtime" or "offline"
 
     def init_status_bar(self):
         """Initialize the status bar"""
@@ -64,27 +59,17 @@ class MainWindow(QtWidgets.QMainWindow):
     def init_toolbar(self):
         """Initialize the toolbar"""
         tool_bar = self.addToolBar("Toolbar")
-        
-        # Add mode switch button
-        self.mode_button = QtWidgets.QPushButton("Real-time Mode")
-        self.mode_button.clicked.connect(self.toggle_mode)
-        tool_bar.addWidget(self.mode_button)
-        
-        # Add separator
-        tool_bar.addSeparator()
-        
-        # Initialize stream manager and file manager
-        self.stream_mgr = EEGStreamManager(self, self.debug_mode)  # Stream management functionality
-        self.file_mgr = FileDataManager(self, self.debug_mode)  # File data management functionality
 
-        # Display the corresponding manager controls based on the current mode
-        self.update_toolbar_by_mode(tool_bar)
-        
+        # Initialize stream manager only
+        self.stream_mgr = EEGStreamManager(self, self.debug_mode)  # Stream management functionality
+        self.stream_mgr.add_conn_menu_on_toolbar(tool_bar)
+        self.stream_mgr.add_record_menu_on_toolbar(tool_bar)
+
         # Add a spacer to push the GitHub link to the right
         spacer = QtWidgets.QWidget()
         spacer.setSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
         tool_bar.addWidget(spacer)
-        
+
         # Add GitHub link label
         github_label = QtWidgets.QLabel('<a href="https://github.com/listplot3d/ChannelSigExplorer/">Help</a>')
         github_label.setOpenExternalLinks(True)
@@ -92,42 +77,9 @@ class MainWindow(QtWidgets.QMainWindow):
         github_label.setStyleSheet("QLabel { padding-right: 10px; }")
         tool_bar.addWidget(github_label)
 
-    def update_toolbar_by_mode(self, toolbar):
-        """Update toolbar based on current mode"""
-        # Clear existing dynamic controls
-        actions_to_remove = []
-        for action in toolbar.actions():
-            if action.text() not in ["Real-time Mode", "Offline Mode", "Help"]:
-                actions_to_remove.append(action)
-        
-        for action in actions_to_remove:
-            toolbar.removeAction(action)
-        
-        if self.mode == "realtime":
-            self.stream_mgr.add_conn_menu_on_toolbar(toolbar)
-            self.stream_mgr.add_record_menu_on_toolbar(toolbar)
-        else:  # offline mode
-            self.file_mgr.add_file_menu_on_toolbar(toolbar)
-            self.file_mgr.add_timeline_controls_on_toolbar(toolbar)
 
-    def toggle_mode(self):
-        """Toggle between real-time/offline modes"""
-        if self.mode == "realtime":
-            self.mode = "offline"
-            self.mode_button.setText("Offline Mode")
-            # Close all loaded indicators
-            self.close_all_indicators()
-            # Update toolbar
-            self.update_toolbar_by_mode(self.addToolBar("Toolbar"))
-            self.status_bar.showMessage("Switched to offline mode")
-        else:
-            self.mode = "realtime"
-            self.mode_button.setText("Real-time Mode")
-            # Close all loaded indicators
-            self.close_all_indicators()
-            # Update toolbar
-            self.update_toolbar_by_mode(self.addToolBar("Toolbar"))
-            self.status_bar.showMessage("Switched to real-time mode")
+
+
 
     def close_all_indicators(self):
         """Close all loaded indicators"""
@@ -346,24 +298,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='ChannelSigExplorer - EEG Data Analysis Tool')
     parser.add_argument('--debug', type=str, choices=['true', 'false'], default='false',
                         help='Enable debug mode (true/false)')
-    parser.add_argument('--mode', type=str, choices=['realtime', 'offline'], default='realtime',
-                        help='Run mode: realtime (Real-time Mode) or offline (Offline Mode)')
-    
+
     # Parse command line arguments
     args = parser.parse_args()
-    
-    # Set debug mode and run mode
-    debug_mode = args.debug.lower() == 'true'
-    mode = args.mode.lower()
-    
-    # Output current settings
-    print(f"Startup parameters: Run mode={mode}, Debug mode={debug_mode}")
 
-    if mode == 'offline':
-        print("Offline mode is not supported yet.")
-        exit(1)
+    # Set debug mode
+    debug_mode = args.debug.lower() == 'true'
+    # print(f"Startup parameters: Debug mode={debug_mode}")
     
     app = QtWidgets.QApplication([])  
-    win = MainWindow(debug_mode, mode)
+    win = MainWindow(debug_mode)
     win.show()
     app.exec()
