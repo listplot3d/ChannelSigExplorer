@@ -13,7 +13,7 @@ class BandPowerRatio_Stack_Handler(BaseIndicatorHandler):
         super().__init__(indicator_update_interval=2)
         self.max_epochs_to_show = 60  # Maximum of 60 recent epochs to display
 
-        self.bands_utils = Bands_Utils(4)  # Use N brainwave frequency bands
+        self.bands_utils = Bands_Utils(5)  # Use N brainwave frequency bands
 
         # Create a PyQtGraph layout
         self.plot_widget = None

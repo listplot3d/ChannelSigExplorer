@@ -2,6 +2,7 @@
 # 2024.12.29 init version, tested with MNE-LSL viewer, by Shawn Li
 # 2025.02.06 added poor signal display, by Shawn Li
 # 2025.03.06 added debugging for forwarding speed, by Shawn Li
+# 2025.04.17 set COM as user input, by Shawn Li
 
 import time
 from NeuroPy3 import NeuroPy3
@@ -53,7 +54,7 @@ def push_sample_to_stream(value):
         
 last_sig_quality_val = None
 def display_signal_quality(value):
-    global last_sig_quality_val  # 新增状态跟踪变量
+    global last_sig_quality_val  # Add state tracking variable
     
     if value != last_sig_quality_val:
         print(f"[{time.strftime('%H:%M:%S')}] Poor Signal:", value)
@@ -63,8 +64,12 @@ if __name__ == '__main__':
     debug_mode = 'debug' in sys.argv
     start_LSL_StreamOutLet()
 
-    # connect to NeuroSky TGMA device through COM, and forward data to LSL stream
-    neuropy = NeuroPy3("COM5")
+    # Ask the user for the serial port, default is COM5
+    port = input("Enter serial port for TGAM device (default: COM5): ").strip()
+    if not port:
+        port = "COM5"
+    print(f"* Using port: {port}")
+    neuropy = NeuroPy3(port)
     neuropy.setCallBack("rawVoltage", push_sample_to_stream)
     neuropy.setCallBack("poorSignal", display_signal_quality)
 
