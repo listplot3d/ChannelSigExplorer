@@ -46,12 +46,17 @@ class WaveletCWT_Handler(BaseIndicatorHandler):
         self.heatmap_widget.setLevels((0, 1))  # Set the data range (0 to 1)
 
         # Set y-axis tick labels (log scale)
-        frequencies = np.logspace(np.log10(1), np.log10(self.num_frequencies), self.num_frequencies)  # From 1Hz to 128Hz
-        y_ticks = self._generate_log_ticks(frequencies)
+        self.frequencies = np.logspace(np.log10(1), np.log10(self.num_frequencies), self.num_frequencies)  # From 1Hz to 128Hz
+        y_ticks = self._generate_log_ticks(self.frequencies)
         plot_item.getAxis("left").setTicks([y_ticks])
 
         # Add dashed lines for brainwave frequency bands
-        self._add_brainwave_lines(plot_item, frequencies)
+        self._add_brainwave_lines(plot_item, self.frequencies)
+        
+        # Add text item to display current dominant frequency
+        self.dominant_freq_text = pg.TextItem(text="Peak: -- Hz", color="white", anchor=(0, 0))
+        self.dominant_freq_text.setPos(2, 2)  # Position in the top-left area of plot
+        plot_item.addItem(self.dominant_freq_text)
 
         return self.plot_layout
 
@@ -115,11 +120,11 @@ class WaveletCWT_Handler(BaseIndicatorHandler):
         # Define the range of wavelet scales to cover the frequency range
         sampling_rate = self.stream_sample_freq  # Assume a sampling rate of 256 Hz
 
-        # Generate frequency points on a logarithmic scale (exponential scale)
-        frequencies = np.logspace(np.log10(1), np.log10(self.num_frequencies), self.num_frequencies)  # From 1Hz to 128Hz
+        # Use the frequencies defined in create_pyqtgraph_plotWidget
+        # No need to regenerate them here
 
         # Compute the corresponding scales
-        scales = pywt.scale2frequency(self.wavelet, frequencies) * sampling_rate
+        scales = pywt.scale2frequency(self.wavelet, self.frequencies) * sampling_rate
 
         # Perform the CWT using pywt.cwt
         cwt_coefficients, _ = pywt.cwt(signal, scales, self.wavelet, sampling_period=1/sampling_rate)
@@ -143,6 +148,13 @@ class WaveletCWT_Handler(BaseIndicatorHandler):
 
         # Insert the new column (latest data at the rightmost position)
         self.grey_heatmap_data[:, -1] = compressed_column
+        
+        # Find the highest power frequency
+        max_index = np.argmax(compressed_column)
+        dominant_freq = self.frequencies[max_index]
+        
+        # Update text with the current dominant frequency
+        self.dominant_freq_text.setText(f"Peak: {dominant_freq:.1f} Hz")
 
         # Update the heatmap display
         self.heatmap_widget.setImage(self.grey_heatmap_data, autoLevels=False, levels=(0, 1))
