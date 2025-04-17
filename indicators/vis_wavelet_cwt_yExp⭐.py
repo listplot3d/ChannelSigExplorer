@@ -29,7 +29,7 @@ class WaveletCWT_Handler(BaseIndicatorHandler):
         self.heatmap_widget = pg.ImageItem(axisOrder='row-major')
         plot_item = self.plot_layout.addPlot(row=0, col=0)  # Add the heatmap to the layout
         plot_item.addItem(self.heatmap_widget)
-        bottom_txt = f"Timeline Epochs (1 Epoch = {self.indicator_update_interval} Seconds)"
+        bottom_txt = f"Timeline Frames (1 Frame = {self.indicator_update_interval} Seconds)"
         plot_item.setLabel("bottom", bottom_txt)
         plot_item.setLabel("left", "Frequency (Hz, Log Scale)")
 

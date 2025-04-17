@@ -32,7 +32,7 @@ class BandPowerRatio_Stack_Handler(BaseIndicatorHandler):
 
         # Create the plot
         plot_item = self.plot_widget.addPlot(title="Brainwave Band Power Ratios (Stacked Display)")
-        bottom_txt = f"Time Epochs (1 Epoch = {self.indicator_update_interval} Seconds)"
+        bottom_txt = f"Timeline Frames (1 Frame = {self.indicator_update_interval} Seconds)"
         plot_item.setLabel("bottom", bottom_txt)
         plot_item.setLabel("left", "Power Intensity")
         plot_item.showGrid(x=True, y=True)
