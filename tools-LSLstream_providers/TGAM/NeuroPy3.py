@@ -33,6 +33,7 @@
 # 2025.03.04 added __rawVoltage
 # 2025.03.06 found and fixed issue: multiple callbacks for same rawvalue
 # 2025.04.15 dont't print error message when closing, by Shawn Li
+# 2025.04.22 changed __rawVoltage to __rawUV, by Shawn Li
 
 import serial
 import time
@@ -61,7 +62,7 @@ class NeuroPy3(object):
     __attention=0
     __meditation=0
     __rawValue=0
-    __rawVoltage=0
+    __rawUVe=0 #raw μV, which is converted from rawValue
     __delta=0
     __theta=0
     __lowAlpha=0
@@ -174,7 +175,7 @@ class NeuroPy3(object):
                                 if rawValue >= 32768:
                                     rawValue = rawValue - 65536
                                 self.rawValue = rawValue
-                                self.rawVoltage = rawValue * (1.8 / 4096) / 2000
+                                self.rawUV = 1e6 * rawValue * (1.8 / 4096) / 2000
                                 # print(self.rawValue)
 
                             elif (code == '83'):  # ASIC_EEG_POWER
@@ -259,18 +260,18 @@ class NeuroPy3(object):
         if "rawValue" in self.callBacksDictionary:
             self.callBacksDictionary["rawValue"](self.__rawValue)
 
-    # rawVoltage
+    # rawUV
     @property
-    def rawVoltage(self):
-        "Get value for rawVoltage"
-        return self.__rawVoltage
+    def rawUV(self):
+        "Get value for rawUV"
+        return self.__rawUV
 
-    @rawVoltage.setter
-    def rawVoltage(self, value):
-        self.__rawVoltage = value
+    @rawUV.setter
+    def rawUV(self, value):
+        self.__rawUV = value
         # if callback has been set, execute the function
-        if "rawVoltage" in self.callBacksDictionary:
-            self.callBacksDictionary["rawVoltage"](self.__rawVoltage)
+        if "rawUV" in self.callBacksDictionary:
+            self.callBacksDictionary["rawUV"](self.__rawUV)
 
     # delta
     @property
@@ -413,11 +414,11 @@ if __name__ == '__main__':
         global rawValNum
         rawValNum = rawValNum + 1
 
-    def rawVoltage_callback(value):
+    def rawUV_callback(value):
         global rawVolNum
         rawVolNum = rawVolNum + 1
 
-    neuropy.setCallBack("rawVoltage", rawVoltage_callback)
+    neuropy.setCallBack("rawUV", rawUV_callback)
     neuropy.setCallBack("rawValue", rawValue_callback)
 
     neuropy.start()

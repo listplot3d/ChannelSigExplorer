@@ -3,6 +3,7 @@
 # 2025.02.06 added poor signal display, by Shawn Li
 # 2025.03.06 added debugging for forwarding speed, by Shawn Li
 # 2025.04.17 set COM as user input, by Shawn Li
+# 2025.04.22 changed rawVoltage to rawUV, by Shawn Li
 
 import time
 from NeuroPy3 import NeuroPy3
@@ -70,7 +71,7 @@ if __name__ == '__main__':
         port = "COM5"
     print(f"* Using port: {port}")
     neuropy = NeuroPy3(port)
-    neuropy.setCallBack("rawVoltage", push_sample_to_stream)
+    neuropy.setCallBack("rawUV", push_sample_to_stream)
     neuropy.setCallBack("poorSignal", display_signal_quality)
 
     neuropy.start()
