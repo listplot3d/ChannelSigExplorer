@@ -175,8 +175,8 @@ class EEGStreamManager:
                 'label': channel_names[i] if channel_names[i] else f"Channel_{i}",
                 'dimension': 'uV',
                 'sample_frequency': sample_rate,  # Changed from 'sample_rate' to 'sample_frequency'
-                'physical_min': -3276.8,
-                'physical_max': 3276.7,
+                'physical_min': -327.68*2,
+                'physical_max': 327.67*2,
                 'digital_min': -32768,
                 'digital_max': 32767,
                 'prefilter': '',
@@ -241,7 +241,7 @@ class EEGStreamManager:
             self.data_buffer = self.data_buffer[:, required_samples:]
             
             # Convert to microvolts and write to file
-            sample_list = [data_to_write[i, :] * 1e6 for i in range(data_to_write.shape[0])]
+            sample_list = [data_to_write[i, :] for i in range(data_to_write.shape[0])]
             self.record_file.writeSamples(sample_list)
 
             # Update total written samples
