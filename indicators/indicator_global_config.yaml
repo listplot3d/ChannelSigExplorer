@@ -1,0 +1,18 @@
+# Global indicator configuration
+# Note: All indicator processing classes depend on the sample frequency from this file
+
+STREAM:
+  # Sampling frequency (Hz) - Base parameter for all indicator calculations
+  # 1. Used directly by unit tests when no device is connected
+  # 2. File will be updated by main GUI when connecting to device, then read by indicator classes
+  sample_freq: 512
+
+LOGGING:
+  # Log level: DEBUG/INFO/WARNING/ERROR/CRITICAL
+  level: INFO
+  # Log file path (relative to this config file)
+  log_file: log.txt
+  # Log message format
+  log_format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  # Timestamp format
+  log_date_format: '%Y-%m-%d %H:%M:%S'

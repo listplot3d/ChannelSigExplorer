@@ -1,21 +1,26 @@
 import itertools
 import logging
 import sys
+from pathlib import Path 
+import yaml  
 
 import numpy as np
 from pyqtgraph.Qt import QtWidgets, QtCore
 
 from __Data_IO_Utils import DataMgr_Raw_In_Intervals, DataMgr_Wave_In_1D
-from __Indicator_Global_Cfg import Indicator_Globals
 from __bands.WaveBands_Utils import Bands_Utils
 
 class BaseIndicatorHandler:
 
 
-    def __init__(self, indicator_update_interval, indicator_wave_columns=None):
-        logging.basicConfig(level=Indicator_Globals.logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
+    def __init__(self, indicator_update_interval, indicator_wave_columns=None):        
+        config_path = Path(__file__).parent / 'indicator_global_config.yaml'
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+        
+        logging.basicConfig(level=config['LOGGING']['level'], format=config['LOGGING']['log_format'])
 
-        self.stream_sample_freq = Indicator_Globals.stream_freq
+        self.stream_sample_freq = config['STREAM']['sample_freq']
 
         self.plot_widget = None  # Plotting widget
         self.plotted_wave = None  # Curve
@@ -113,7 +118,6 @@ class BaseIndicatorHandler:
         win.show()
 
         """ Simulation signal parameters """
-        sampling_freq = Indicator_Globals.stream_freq  # Sampling frequency for simulated data stream (Hz)
         signal_duration = 5  # Duration of a single signal cycle (seconds)
 
         # Define brainwave frequency band parameters (frequency range and amplitude)
@@ -131,7 +135,7 @@ class BaseIndicatorHandler:
 
         def generate_dynamic_signal():
             nonlocal time_counter
-            t = time_counter / sampling_freq  # Current time (in seconds)
+            t = time_counter / self.stream_sample_freq  # Current time (in seconds)
 
             # Generate dynamic signal
             signal_value = 0.0
@@ -144,7 +148,7 @@ class BaseIndicatorHandler:
 
             # Update time counter and target amplitude
             time_counter += 1
-            if t % amplitude_update_interval < (1 / sampling_freq):  # Avoid frequent updates
+            if t % amplitude_update_interval < (1 / self.stream_sample_freq):  # Avoid frequent updates
                 for wave in wave_params:
                     wave['target_amp'] = np.random.uniform(0.1, 0.9)  # Generate new random target amplitude
 
@@ -156,7 +160,7 @@ class BaseIndicatorHandler:
         # Use a timer to update the plot
         timer = QtCore.QTimer()
         timer.timeout.connect(lambda: self.process_new_data_and_update_plot(next(signal_iterator)))
-        timer.start(int(1000 / sampling_freq))
+        timer.start(int(1000 / self.stream_sample_freq))
 
         # Run the application
         sys.exit(app.exec())

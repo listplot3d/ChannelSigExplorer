@@ -10,7 +10,8 @@ from pyqtgraph.Qt import QtCore, QtWidgets
 from mne_lsl.lsl import resolve_streams
 from mne_lsl.stream import StreamLSL
 from GUIComp_Utils import GUI_Utils
-from indicators.__Indicator_Global_Cfg import Indicator_Globals
+from pathlib import Path
+import yaml  
 
 
 mne.set_log_level('WARNING')  # Set MNE log level to WARNING
@@ -278,17 +279,30 @@ class EEGStreamManager:
         """Connect to an EEG data stream"""
         self.device_info = deviceInfo
         real_freq = deviceInfo.sample_freq
-        indicator_cfg_freq = Indicator_Globals.stream_freq
+        
+        # 读取YAML配置文件
+        config_path = Path(__file__).parent / 'indicators/indicator_global_config.yaml'
+        with open(config_path, 'r', encoding='utf-8') as f:
+            config = yaml.safe_load(f)
+        
+        indicator_cfg_freq = config['STREAM']['sample_freq']
 
         if real_freq != indicator_cfg_freq:
-            self.status_bar.showMessage(f"Before using {self.device_info.name}, please change setting to this [ "
-                                        f" indicators/__Indicator_Global_Cfg.py: stream_freq={real_freq}]")
-            return
+            # 更新配置值
+            config['STREAM']['sample_freq'] = real_freq
+            
+            # 写回YAML文件
+            with open(config_path, 'w') as f:
+                yaml.dump(config, f, sort_keys=False)
+                
+            self.status_bar.showMessage(f" indicator_global_config.yaml updated: {real_freq}Hz")
+            QtCore.QCoreApplication.processEvents() # make sure the message is displayed
+            indicator_cfg_freq = real_freq
 
         try:
             stream_list = resolve_streams(stype='EEG') + resolve_streams(stype='eeg')
             if not stream_list:
-                self.status_bar.showMessage("didn't find any streams")
+                self.status_bar.showMessage("No stream found")
                 return
 
             sinfo = stream_list[0]
