@@ -8,11 +8,5 @@ STREAM:
   sample_freq: 512
 
 LOGGING:
-  # Log level: DEBUG/INFO/WARNING/ERROR/CRITICAL
   level: INFO
-  # Log file path (relative to this config file)
-  log_file: log.txt
-  # Log message format
   log_format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-  # Timestamp format
-  log_date_format: '%Y-%m-%d %H:%M:%S'
