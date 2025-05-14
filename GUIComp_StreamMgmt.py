@@ -86,14 +86,16 @@ class EEGStreamManager:
         self.record_file_name = None  # Recording file name
         self.device_info = None
         self.record_button = None  # Recording button reference
-        self.data_buffer = None  # 新增数据缓冲区
+        self.data_buffer = None  
         self.debug_mode = debug_mode
-        self.debug_counter = 0  # 新增调试计数器
-        self.debug_sample_counter = 0  # 替换原有的debug_counter
-        self.debug_last_print_time = time.time()  # 新增时间戳记录
+        self.debug_counter = 0  
+        self.debug_sample_counter = 0 
+        self.debug_last_print_time = time.time()  
         self.write_count = 0  # For tracking file write operations
         self.first_write_time = None  # For tracking first write timestamp
         self.total_written_samples = 0  # For tracking total written samples
+        self.log_file = open("eeg_stream.log", "a")
+        self.log_message("EEGStreamManager initialized")
 
     def add_conn_menu_on_toolbar(self, toolbar):
         """Add connection menu"""
@@ -131,11 +133,12 @@ class EEGStreamManager:
             # 停止录制
             self.recording = False
             self.record_button.setText("🔴")
-            self.status_bar.showMessage("Recording stopped")
+            # self.log_message("Recording stopped")
+            self.log_message("Recording stopped")
             self.close_recording_file()
         else:
             if not self.stream:
-                self.status_bar.showMessage("Please connect stream before recording")
+                self.log_message("Please connect stream before recording")
                 return
 
             # 开始录制
@@ -143,7 +146,7 @@ class EEGStreamManager:
             self.record_button.setText("🟥")
             self.record_channel_action.setText("Current Channel")  # 变为实心方块
             self.open_recording_file()
-            self.status_bar.showMessage(
+            self.log_message(
                 f"Recording channels {self.device_info.channel_picks} to {self.record_file_name}")
 
     def record_whole_stream(self):
@@ -198,12 +201,11 @@ class EEGStreamManager:
             if data is None:
                 return
 
-
             if self.debug_mode:
-                samples_this_call = data.shape[1]  # 获取本次调用的样本数
+                samples_this_call = data.shape[1]  # Get number of samples in this call
                 self.debug_sample_counter += samples_this_call
 
-                # 计算时间差
+                # Calculate time difference
                 current_time = time.time()
                 if current_time - self.debug_last_print_time >= 1.0:
                     timestamp = datetime.now().strftime("%H:%M:%S")
@@ -211,7 +213,7 @@ class EEGStreamManager:
                     self.debug_sample_counter = 0
                     self.debug_last_print_time = current_time
 
-            # 原有数据处理逻辑保持不变
+            # Keep original data processing logic
             selected_channel_data = data
             for handler in self.main_window.loaded_indicators:
                 handler.process_new_data_and_update_plot(selected_channel_data)
@@ -220,7 +222,7 @@ class EEGStreamManager:
                 self.save_data_to_file(data)
         except Exception as e:
             traceback.print_exc()
-            self.status_bar.showMessage("failed to process new data")
+            self.log_message("failed to process new data")
 
     def save_data_to_file(self, data):
         # Check if data_buffer is None and initialize if needed 
@@ -255,7 +257,7 @@ class EEGStreamManager:
             if self.write_count % 10 == 0:
                 elapsed_time = time.time() - self.first_write_time
                 sample_rate = self.total_written_samples / elapsed_time
-                self.status_bar.showMessage(f"Write sampling rate: {sample_rate:.2f} samples/sec")
+                self.log_message(f"Write sampling rate: {sample_rate:.2f} samples/sec")
 
     def close_recording_file(self):
         """Close the EDF+ file"""
@@ -273,14 +275,14 @@ class EEGStreamManager:
 
             # Update the file name and display the status
             self.record_file_name = new_file_name
-            self.status_bar.showMessage(f"Data saved: {self.record_file_name}")
+            self.log_message(f"Data saved: {self.record_file_name}")
 
     def connect_eeg_stream(self, deviceInfo):
         """Connect to an EEG data stream"""
         self.device_info = deviceInfo
         real_freq = deviceInfo.sample_freq
         
-        # 读取YAML配置文件
+        # read YAML config file
         config_path = Path(__file__).parent / 'indicators/indicator_global_config.yaml'
         with open(config_path, 'r', encoding='utf-8') as f:
             config = yaml.safe_load(f)
@@ -288,21 +290,21 @@ class EEGStreamManager:
         indicator_cfg_freq = config['STREAM']['sample_freq']
 
         if real_freq != indicator_cfg_freq:
-            # 更新配置值
+            # update config
             config['STREAM']['sample_freq'] = real_freq
             
-            # 写回YAML文件
+            # write to YAML file
             with open(config_path, 'w') as f:
                 yaml.dump(config, f, sort_keys=False)
                 
-            self.status_bar.showMessage(f" indicator_global_config.yaml updated: {real_freq}Hz")
+            self.log_message(f" indicator_global_config.yaml updated: {real_freq}Hz")
             QtCore.QCoreApplication.processEvents() # make sure the message is displayed
             indicator_cfg_freq = real_freq
 
         try:
             stream_list = resolve_streams(stype='EEG') + resolve_streams(stype='eeg')
             if not stream_list:
-                self.status_bar.showMessage("No stream found")
+                self.log_message("No stream found")
                 return
 
             sinfo = stream_list[0]
@@ -314,11 +316,11 @@ class EEGStreamManager:
             self.stream.add_reference_channels("CPz")
 
             self.start_timer()
-            self.status_bar.showMessage(f"connected to {deviceInfo.channel_picks}")
+            self.log_message(f"connected to {deviceInfo.channel_picks}")
 
         except Exception as e:
             traceback.print_exc()
-            self.status_bar.showMessage("stream connection failed")
+            self.log_message("stream connection failed")
 
     def disconnect_stream(self):
         """Disconnect the EEG data stream"""
@@ -343,3 +345,16 @@ class EEGStreamManager:
             print("need to pick channels")
             exit(1)
         return data[self.device_info.channel_picks.index(self.device_info.channel_picks[0]), :]
+    
+    def log_message(self, message):
+        """Log message to file and display in status bar"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = f"[{timestamp}] {message}\n"
+        self.log_file.write(log_entry)
+        self.log_file.flush() 
+        self.status_bar.showMessage(message)  # Changed from self.log_message to status_bar.showMessage
+
+    def __del__(self):
+        """Clean up resources"""
+        if hasattr(self, 'log_file') and self.log_file:
+            self.log_file.close()
