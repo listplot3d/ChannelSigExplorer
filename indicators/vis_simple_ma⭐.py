@@ -25,10 +25,10 @@ class Simple_Waveform_MA_Handler(BaseIndicatorHandler):
     @override
     def process_1_interval_rawdata_and_update_plot(self, interval_data):
         logging.debug(f"Simple_Waveform_MA_Handler: sliced_data rcvd {interval_data.shape}")
-        # 更新指标数组
+        
         avg_value = np.mean(interval_data)
         self.waveDataIn1D_mgr.append(avg_value)
-        # 更新曲线
+   
         self.plotted_wave.setData(self.waveDataIn1D_mgr.buf)
 
 if __name__ == '__main__':
