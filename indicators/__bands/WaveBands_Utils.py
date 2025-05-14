@@ -17,6 +17,14 @@ class Bands_Utils:
             "Beta": {"range": (13, 30), "color": '#e74c3c'},
             "Gamma": {"range": (30, 100), "color": '#9b59b6'}
         },
+        "6_bands": {
+            "Delta": {"range": (0.5, 4), "color": '#2ecc71'},
+            "Theta": {"range": (4, 8), "color": '#f1c40f'},
+            "Part Alpha": {"range": (8, 11), "color": '#85c1e9'},
+            "Sigma": {"range": (11, 16), "color": '#3498db'}, #spindle detection
+            "Part Beta": {"range": (16, 30), "color": '#e74c3c'},
+            "Gamma": {"range": (30, 100), "color": '#9b59b6'}
+        },
         "7_bands": {
             "Theta": {"range": (4, 8), "color": '#f1c40f'},
             "Low Alpha": {"range": (8, 10), "color": '#85c1e9'},
@@ -36,20 +44,14 @@ class Bands_Utils:
             "Low Gamma": {"range": (30, 50), "color": '#c39bd3'},
             "Middle Gamma": {"range": (50, 100), "color": '#9b59b6'}
         }
+
     }
-
     def __init__(self, bands_num):
-        if bands_num == 4:
-            self.bands_config = self.BRAIN_WAVES_BANDS["4_bands"]
-        elif bands_num == 5:
-            self.bands_config = self.BRAIN_WAVES_BANDS["5_bands"]
-        elif bands_num == 7:
-            self.bands_config = self.BRAIN_WAVES_BANDS["7_bands"]
-        elif bands_num == 8:
-            self.bands_config = self.BRAIN_WAVES_BANDS["8_bands"]
-        else:
-            raise ValueError(f"bands_num({bands_num}) must be in {4,5,7,8}")
-
+        try:
+            self.bands_config = self.BRAIN_WAVES_BANDS[f"{bands_num}_bands"]
+        except KeyError:
+            raise ValueError(f"bands_num({bands_num}) is out of supported range")
+            
         self.num_bands = bands_num
         self.bands = {name: info["range"] for name, info in self.bands_config.items()}
         self.colors = [info["color"] for info in self.bands_config.values()]

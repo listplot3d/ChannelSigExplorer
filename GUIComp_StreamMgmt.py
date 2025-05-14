@@ -58,13 +58,13 @@ class DeviceInfoDatabase:
                         100,
                         "Player")
 
-    # TGMA
+    # TGAM
     TGMA_ALL = DeviceInfo(["Fp1", "Fp2"],
                           512,
                           "TGMA All")
 
     TGMA = DeviceInfo(["Fp1"], 512,
-                      "TGMA")
+                      "TGAM")
 
     # Flexolink
     FLEXOLINK_ALL = DeviceInfo(["Fpz-Raw", "Fpz-Filtered"], 250,

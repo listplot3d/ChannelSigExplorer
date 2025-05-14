@@ -11,7 +11,7 @@ class BandPowerRatio_Wave_Handler(BaseIndicatorHandler):
     @override
     def __init__(self):
         super().__init__(indicator_update_interval=2)  # Update every 2 seconds
-        self.max_epochs_to_show = 60  # Show up to the most recent 60 epochs
+        self.max_epochs_to_show = 120  # Show up to the most recent 60 epochs
 
         self.bands_utils = Bands_Utils(5)  # Use 5 brainwave frequency bands
 

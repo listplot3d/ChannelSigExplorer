@@ -64,35 +64,6 @@ class BaseIndicatorHandler:
             self.process_1_interval_rawdata_and_update_plot(interval_data)
             self.intervalsData_mgr.delete_1st_filled_row()
             
-    def process_offline_data_and_update_plot(self, full_data, current_position):
-        """
-        处理离线数据并更新图表
-        :param full_data: 完整的通道数据
-        :param current_position: 当前时间位置（样本索引）
-        """
-        self.is_offline_mode = True
-        self.offline_data = full_data
-        self.current_position = current_position
-        
-        # 默认实现：从当前位置提取一个间隔的数据进行处理
-        # 子类可以覆盖此方法以实现自定义的离线数据处理
-        interval_len = int(self.stream_sample_freq * self.indicator_update_interval)
-        start_pos = max(0, current_position - interval_len // 2)
-        end_pos = min(len(full_data), start_pos + interval_len)
-        
-        # 确保间隔长度一致
-        if end_pos - start_pos < interval_len:
-            start_pos = max(0, end_pos - interval_len)
-        
-        if end_pos > start_pos:
-            interval_data = full_data[start_pos:end_pos]
-            # 如果提取的数据长度不足，则填充
-            if len(interval_data) < interval_len:
-                padding = np.zeros(interval_len - len(interval_data))
-                interval_data = np.concatenate([interval_data, padding])
-            
-            self.process_1_interval_rawdata_and_update_plot(interval_data)
-
     def test_current_indicator_with_simulated_data(self):
         """
         Test the current real-time waveform processing module.
