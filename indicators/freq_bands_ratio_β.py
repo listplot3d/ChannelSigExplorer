@@ -1,5 +1,5 @@
 from typing import override
-from analys_bands_ratio_wave import BandPowerRatio_Wave_Handler
+from freq_bands_ratio_wave import BandPowerRatio_Wave_Handler
 
 class BandPowerRatio_Waveβ_Handler(BandPowerRatio_Wave_Handler):
     @override
