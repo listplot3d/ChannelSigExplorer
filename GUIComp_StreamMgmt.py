@@ -115,7 +115,7 @@ class EEGStreamManager:
 
     def add_record_menu_on_toolbar(self, toolbar):
         """Add recording menu as a toolbutton"""
-        # 创建录制菜单
+        # create menu for recording options
         record_menu = QtWidgets.QMenu("recording", toolbar)
         self.record_channel_action = record_menu.addAction("Current Channel")
         self.record_channel_action.triggered.connect(self.record_current_channel)
@@ -123,14 +123,13 @@ class EEGStreamManager:
         # self.record_stream_action = record_menu.addAction("Whole Stream")
         # self.record_stream_action.triggered.connect(self.record_whole_stream)
         
-        # 创建工具按钮
         self.record_button = GUI_Utils.transform_menu_to_toolbutton("🔴", record_menu)
         toolbar.addWidget(self.record_button)
 
     def record_current_channel(self):
         """Handle recording of the current selected channel"""
         if self.recording:
-            # 停止录制
+            # stop recording
             self.recording = False
             self.record_button.setText("🔴")
             # self.log_message("Recording stopped")
@@ -141,10 +140,10 @@ class EEGStreamManager:
                 self.log_message("Please connect stream before recording")
                 return
 
-            # 开始录制
+            # start recording
             self.recording = True
             self.record_button.setText("🟥")
-            self.record_channel_action.setText("Current Channel")  # 变为实心方块
+            self.record_channel_action.setText("Current Channel")  
             self.open_recording_file()
             self.log_message(
                 f"Recording channels {self.device_info.channel_picks} to {self.record_file_name}")
@@ -157,9 +156,11 @@ class EEGStreamManager:
 
     def open_recording_file(self):
         """Open an EDF+ file for recording"""
+        # Create data_recorded directory if not exists
+        os.makedirs("./data_recorded", exist_ok=True)
+        
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.record_file_name = f"./{self.device_info.name}_case_{timestamp}.edf"
-        # channel_names = self.stream.ch_names
+        self.record_file_name = f"./data_recorded/{self.device_info.name}_case_{timestamp}.edf"
         channel_names = self.device_info.channel_picks
         channel_count = len(channel_names)
         sample_rate = self.device_info.sample_freq
