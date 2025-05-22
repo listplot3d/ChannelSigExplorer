@@ -4,6 +4,7 @@
 -------------------
 ## User scenarios for this software could be：
 * **Real-time** data analysis/visualization tool for BioSignal channel. In another word, **real-time** visualization tool for [MNE-LSL](https://mne.tools/mne-lsl/stable/index.html) Stream's single channel
+* An EDF recorder for LSL Stream's single channel
 * Gallary framework for BioSig indicators
 * Connectivity examples for EEG headbands
 * EEG headband quality evaluation tool
@@ -30,6 +31,8 @@ And it was originally composed to fit the place below:
     - edf+
 ---------------
 ## How to Run
+(With docs and sample data excluded, souce code size of this project is 1.38M)
+
 #### 1. Hardware requirement
   * this software is tested based on PC with metrics: 2.60Ghz CPU + 8G Memory + Win11 (no graphic card)
   * if with less hardware resource, e.g.2.0Ghz CPU + 4G Memory + Any OS, it should also be alright to run indicators in tutorial. But if you write own advanced indicators, or connect to new device, then it may change hardware requirements.
@@ -51,8 +54,10 @@ more details could be found in [introduction](introduction) folder.
 
 ----------------
 ## Contact
-    listplot3d_dev[at]163.com
-Currently I am using this software for personal exploration of sleeping / meditation. 
-If you are doing research on similar direction, I would be very happy to receive 
+Any Contribution or Discussion on this project is more than welcome.
+
+Currently I am using this software for exploration of sleeping / meditation. 
+
+If you are doing research on similar direction, I would be very happy when receiving 
 your contact message.
 
